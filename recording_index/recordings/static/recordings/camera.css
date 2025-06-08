@@ -1,0 +1,11 @@
+#video_container {
+    position: fixed;
+    left: 50px;
+    z-index: 1030;
+}
+
+/*
+.camera_names {
+    position: fixed;
+    z-index: 1030;
+}*/

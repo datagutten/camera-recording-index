@@ -1,0 +1,26 @@
+{% extends "recordings/base.html" %}
+{% load static %}
+{% block body %}
+
+    {{ config|json_script:"config" }}
+
+    <script src="{% static 'recordings/camera.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <div class="container mx-0">
+        <table>
+            {% for camera in cameras %}
+                <tr class="border">
+                    <td class="py-0 camera_names" style="height: {{ config.camera_height }}px">{{ camera }}</td>
+                    <td><img id="timeline-{{ camera }}" class="timeline"
+                             src="/timeline/{{ camera }}/{{ date }}"
+                             alt="Timeline for {{ camera }}"/></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="container" id="video_container">
+        <p id="video_text"></p>
+        <video id="video" style="max-width: 90%; max-height: 90%" controls autoplay muted="muted"></video>
+    </div>
+
+{% endblock %}

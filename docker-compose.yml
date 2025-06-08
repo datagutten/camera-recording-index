@@ -1,0 +1,19 @@
+services:
+  index:
+    build: .
+    volumes:
+    - "/mnt/video:/video"
+    - static:/home/app/static
+    env_file:
+    - .env
+
+  nginx:
+    build: nginx
+    volumes:
+    - "/mnt/video/streaming:/usr/share/nginx/html/video:ro"
+    - static:/home/app/static
+    ports:
+    - "80:80"
+
+volumes:
+  static:
