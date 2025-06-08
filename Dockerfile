@@ -5,7 +5,8 @@ COPY poetry.lock .
 
 RUN pip install -U pip poetry
 RUN poetry self add poetry-plugin-export
-RUN poetry export -f requirements.txt --output requirements.txt && pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
+RUN poetry export -f requirements.txt --output requirements.txt --with gunicorn && \
+     pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
 
 
 FROM python:latest
