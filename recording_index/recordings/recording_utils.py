@@ -4,7 +4,11 @@ import re
 from typing import List
 
 import dateutil
+import pytz
+from django.conf import settings
+from django.db import IntegrityError
 
+from . import models
 from .video import duration_ffprobe
 
 folder = os.path.dirname(os.path.realpath(__file__))
@@ -72,6 +76,33 @@ class RecordingFile:
         mtimestamp = os.path.getmtime(self.file)
         mtime = datetime.datetime.fromtimestamp(mtimestamp)
         return mtime
+
+
+def load_recordings(date: datetime.date):
+    local_tz = pytz.timezone(settings.TIME_ZONE)
+
+    for camera in models.Camera.objects.all():
+        recordings = find_videos(camera.path, date)
+        tz = pytz.timezone(camera.timezone)
+
+        for recording in recordings:
+            if recording.start.date() < date:
+                continue
+
+            recording_db = models.Recording(
+                camera=camera,
+                start_time=recording.start.astimezone(tz),
+                end_time=recording.end.astimezone(tz),
+                mtime=recording.mtime().astimezone(local_tz),
+                file=recording.file.replace('\\', '/'),
+            )
+
+            try:
+                recording_db.save()
+                print('Loaded %s' % recording_db)
+            except IntegrityError:
+                continue
+            pass
 
 
 def find_videos(base_folder: str = None, date: datetime.date = None) -> List[RecordingFile]:
