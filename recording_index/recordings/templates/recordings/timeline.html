@@ -1,4 +1,5 @@
 {% extends "recordings/base.html" %}
+{% load django_bootstrap5 %}
 {% load static %}
 {% block body %}
 
@@ -6,17 +7,26 @@
 
     <script src="{% static 'recordings/camera.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-    <div class="container mx-0">
+    <div class="container mx-0" style="max-width: 1600px">
+        <div class="position-relative my-auto" role="group" style="height: 48px">
+            <a href="?date={{ date_prev.isoformat }}">{% bootstrap_button "Previous day" id="button-prev" button_class="btn-primary position-absolute top-0 start-0" value=date_prev %}</a>
+            {% bootstrap_button "Load recordings" id="button-load" button_class="btn-primary position-absolute top-0 start-50" value=date.isoformat %}
+            {% if date < today %}
+                <a href="?date={{ date_next.isoformat }}">{% bootstrap_button "Next day" id="button-next" button_class="btn-primary position-absolute top-0 end-0" value=date_next %}</a>
+            {% endif %}
+        </div>
+    <div>
         <table>
             {% for camera in cameras %}
                 <tr class="border">
                     <td class="py-0 camera_names" style="height: {{ config.camera_height }}px">{{ camera }}</td>
                     <td><img id="timeline-{{ camera }}" class="timeline"
-                             src="/timeline/{{ camera }}/{{ date }}"
+                             src="/timeline/{{ camera }}/{{ date.isoformat }}"
                              alt="Timeline for {{ camera }}"/></td>
                 </tr>
             {% endfor %}
         </table>
+    </div>
     </div>
     <div class="container" id="video_container">
         <p id="video_text"></p>

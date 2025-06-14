@@ -11,23 +11,36 @@ from django.shortcuts import render, get_object_or_404
 from recordings import models
 from recordings import timeline_image as image
 from recordings import video
+from recordings.recording_utils import load_recordings
 
 tz_local = pytz.timezone(settings.TIME_ZONE)
 
 
-def timeline(request):
-    if request.GET.get('date'):
-        date = request.GET['date']
-    else:
-        date = datetime.date.today().isoformat()
+def load(request, date: str):
+    date_obj = datetime.date.fromisoformat(date)
+    load_recordings(date_obj)
+    return HttpResponse('Loaded recordings')
 
-    start_obj = datetime.datetime.fromisoformat(date + 'T00:00:00').astimezone(tz_local)
+
+def timeline(request):
+    today = datetime.date.today()
+    if request.GET.get('date'):
+        date = datetime.date.fromisoformat(request.GET['date'])
+    else:
+        date = today
+
+    start_obj = datetime.datetime.fromisoformat(date.isoformat() + 'T00:00:00').astimezone(tz_local)
+    date_prev = date - datetime.timedelta(days=1)
+    date_next = date + datetime.timedelta(days=1)
     cameras = models.Camera.objects.all()
 
     return render(request, 'recordings/timeline.html',
                   {
                       'cameras': cameras,
                       'date': date,
+                      'date_prev': date_prev,
+                      'date_next': date_next,
+                      'today': today,
                       'config': {
                           'camera_height': settings.CAMERA_HEIGHT,
                           'stream_url': settings.STREAM_URL,

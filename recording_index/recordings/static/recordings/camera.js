@@ -31,6 +31,14 @@ $(document).ready(function () {
         }
     }
 
+    $("#button-load").on("click", function () {
+        $(this).addClass("active")
+        const date = $(this).val()
+        $.get(`/load/${date}`, function () {
+            $(this).removeClass("active")
+        })
+    })
+
     $(".timeline").on("mousemove", function (e) {
         var parentOffset = $(this).parent().offset();
         //or $(this).offset(); if you really just want the current element's offset

@@ -7,5 +7,6 @@ urlpatterns = [
     path('timeline/<str:camera>/<str:date>/', views.timeline_image),
     path('recording/<str:camera>/<str:timestamp>', views.recording),
     path('stream_url/<int:recording_id>', views.stream_url, name='stream_url'),
+    path('load/<str:date>', views.load, name='load'),
 
 ]
