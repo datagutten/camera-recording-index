@@ -16,6 +16,18 @@ class Camera(models.Model):
     def recording_files(self, date: datetime.date = None):
         return recording_utils.find_videos(self.path, date)
 
+    # https://stackoverflow.com/a/63437073/2630074
+    def get_closest_recording(self, target_datetime: datetime.datetime) -> 'Recording':
+        greater = self.recordings.filter(start_time__gte=target_datetime).first()
+        less = self.recordings.filter(start_time__lte=target_datetime).order_by('-start_time').first()
+
+        if greater and less:
+            greater_datetime = getattr(greater, 'start_time')
+            less_datetime = getattr(less, 'start_time')
+            return greater if abs(greater_datetime - target_datetime) < abs(less_datetime - target_datetime) else less
+        else:
+            return greater or less
+
 
 class Recording(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE, related_name='recordings')
@@ -26,6 +38,9 @@ class Recording(models.Model):
 
     def duration(self) -> datetime.timedelta:
         return self.end_time - self.start_time
+
+    def next(self):
+        return self.camera.recordings.filter(start_time__gte=self.end_time).first()
 
     class Meta:
         unique_together = ("camera", "start_time")

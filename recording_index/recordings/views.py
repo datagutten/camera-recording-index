@@ -68,33 +68,10 @@ def timeline_image(request, camera, date):
     return HttpResponse(img_io, content_type='image/png')
 
 
-# https://stackoverflow.com/a/63437073/2630074
-def get_closest(
-        *,
-        qs: django.db.models.QuerySet,
-        datetime_field: str,
-        target_datetime: Union[datetime.datetime, datetime.date],
-) -> django.db.models.Model:
-    greater = qs.filter(**{
-        f'{datetime_field}__gte': target_datetime,
-    }).order_by(datetime_field).first()
-
-    less = qs.filter(**{
-        f'{datetime_field}__lte': target_datetime,
-    }).order_by(f'-{datetime_field}').first()
-
-    if greater and less:
-        greater_datetime = getattr(greater, datetime_field)
-        less_datetime = getattr(less, datetime_field)
-        return greater if abs(greater_datetime - target_datetime) < abs(less_datetime - target_datetime) else less
-    else:
-        return greater or less
-
-
 def recording(request, camera: str, timestamp: str):
     time_obj = datetime.datetime.fromisoformat(timestamp)
-    recording_obj = get_closest(qs=models.Recording.objects.filter(camera__name=camera), datetime_field='start_time',
-                                target_datetime=time_obj)
+    camera_obj: models.Camera = get_object_or_404(models.Camera, name=camera)
+    recording_obj = camera_obj.get_closest_recording(time_obj)
     if not recording_obj:
         return django.http.HttpResponseNotFound('No recording found')
 
